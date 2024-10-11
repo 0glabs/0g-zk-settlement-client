@@ -10,8 +10,8 @@ class Request {
         this.fee = BigInt(parseInt(fee));
 
         // userAddress 和 providerAddress 为 u160 以 hexstring 形式输入
-        this.userAddress = BigInt(parseInt(userAddress, 16));
-        this.providerAddress = BigInt(parseInt(providerAddress, 16));
+        this.userAddress = BigInt(userAddress);
+        this.providerAddress = BigInt(providerAddress);
     }
 
     serialize() {
