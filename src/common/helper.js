@@ -90,7 +90,7 @@ function paddingSignature(requests, r8, s, l) {
 
     let currentNonce = lastRequest.nonce;
     for (let i = requests.length; i < l; i++) {
-        currentNonce += 1;
+        currentNonce += BigInt(1);
         const noopRequest = new Request(
             currentNonce,
             0,

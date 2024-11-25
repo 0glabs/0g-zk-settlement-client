@@ -1,13 +1,13 @@
 const utils = require('./utils');
 
 const ADDR_LENGTH = 20;
-const NONCE_LENGTH = 4;
+const NONCE_LENGTH = 8;
 const FEE_LENGTH = 8;  // u64 的长度为 8 字节
 
 class Request {
     constructor(nonce, fee, userAddress, providerAddress) {
-        this.nonce = parseInt(nonce);
-        this.fee = BigInt(parseInt(fee));
+        this.nonce = BigInt(nonce);
+        this.fee = BigInt(fee);
 
         // userAddress 和 providerAddress 为 u160 以 hexstring 形式输入
         this.userAddress = BigInt(userAddress);
@@ -16,11 +16,12 @@ class Request {
 
     serialize() {
         const buffer = new ArrayBuffer(NONCE_LENGTH + ADDR_LENGTH * 2 + FEE_LENGTH);
-        const view = new DataView(buffer);
         let offset = 0;
 
-        // 写入 nonce (u32)
-        view.setUint32(offset, this.nonce, true);
+        // 写入 nonce (u64)
+        const nonceBytes = utils.bigintToBytes(this.nonce, NONCE_LENGTH);
+        console.log('nonceBytes:', nonceBytes, 'nonce:', this.nonce);
+        new Uint8Array(buffer, offset, NONCE_LENGTH).set(nonceBytes);
         offset += NONCE_LENGTH;
 
         // 写入 fee (u64)
@@ -51,8 +52,8 @@ class Request {
         const view = new DataView(byteArray.buffer);
         let offset = 0;
 
-        // 读取 nonce (u32)
-        const nonce = view.getUint32(offset, true);
+        // 读取 nonce (u64)
+        const nonce = utils.bytesToBigint(new Uint8Array(byteArray.slice(offset, offset + NONCE_LENGTH)));
         offset += NONCE_LENGTH;
 
         // 读取 fee (u64)
