@@ -2,7 +2,7 @@ const utils = require('./utils');
 
 const ADDR_LENGTH = 20;
 const NONCE_LENGTH = 8;
-const FEE_LENGTH = 8;  // u64 的长度为 8 字节
+const FEE_LENGTH = 16;  // u128 的长度为 16 字节
 
 class Request {
     constructor(nonce, fee, userAddress, providerAddress) {
@@ -24,7 +24,7 @@ class Request {
         new Uint8Array(buffer, offset, NONCE_LENGTH).set(nonceBytes);
         offset += NONCE_LENGTH;
 
-        // 写入 fee (u64)
+        // 写入 fee (u128)
         const feeBytes = utils.bigintToBytes(this.fee, FEE_LENGTH);
         new Uint8Array(buffer, offset, FEE_LENGTH).set(feeBytes);
         offset += FEE_LENGTH;
@@ -56,7 +56,7 @@ class Request {
         const nonce = utils.bytesToBigint(new Uint8Array(byteArray.slice(offset, offset + NONCE_LENGTH)));
         offset += NONCE_LENGTH;
 
-        // 读取 fee (u64)
+        // 读取 fee (u128)
         const fee = utils.bytesToBigint(new Uint8Array(byteArray.slice(offset, offset + FEE_LENGTH)));
         offset += FEE_LENGTH;
 
