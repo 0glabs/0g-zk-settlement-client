@@ -62,5 +62,5 @@ module.exports = {
     packPoint,
     hash,
     unpackSignature,
-    unpackPoint
+    unpackPoint,
 };

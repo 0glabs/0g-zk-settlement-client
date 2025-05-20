@@ -1,6 +1,6 @@
 const crypto = require('./common/crypto');
 const utils = require('./common/utils');
-const helper = require('./common/helper')
+const helper = require('./common/helper');
 
 async function genKeyPair() {
     await crypto.init();
@@ -16,24 +16,28 @@ async function genKeyPair() {
     return { packPrivkey0, packPrivkey1, packedPubkey0, packedPubkey1 };
 }
 
-async function signData(data, privkey) {
-    const privkey0 = utils.bigintToBytes(privkey[0], 16)
-    const privkey1 = utils.bigintToBytes(privkey[1], 16)
+async function genCombinedKey(privkey0, privkey1) {
+    const packedPrivkey0 = utils.bigintToBytes(privkey0, 16);
+    const packedPrivkey1 = utils.bigintToBytes(privkey1, 16);
     const combinedKey = new Uint8Array(32);
-    combinedKey.set(privkey0, 0); 
-    combinedKey.set(privkey1, 16);
-
-    const signatures = await helper.signRequests(data, combinedKey);
-    return signatures;
+    combinedKey.set(packedPrivkey0, 0);
+    combinedKey.set(packedPrivkey1, 16);
+    return combinedKey;
 }
 
-async function verifySignature(data, signatures, pubkey) {
-    const isValid = await helper.verifySig(data, signatures, pubkey)
-    return isValid;
+async function signData(data, reqPrivkey, resPrivkey) {
+    const reqKey = await genCombinedKey(reqPrivkey[0], reqPrivkey[1]);
+    const resKey = await genCombinedKey(resPrivkey[0], resPrivkey[1]);
+
+    return await helper.signRequests(data, reqKey, resKey);
+}
+
+async function verifySignature(data, reqSig, reqPubkey, resSig, resPubkey) {
+    return await helper.verifySig(data, reqSig, reqPubkey, resSig, resPubkey);
 }
 
 module.exports = {
     genKeyPair,
     signData,
-    verifySignature
-}
+    verifySignature,
+};
