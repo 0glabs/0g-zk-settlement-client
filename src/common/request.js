@@ -7,15 +7,15 @@ const HASH_LENGTH = 32; // u256 的长度为 32 字节
 
 class Request {
     constructor(nonce, reqFee, userAddress, providerAddress, requestHash, resFee) {
-        this.nonce = BigInt(nonce);
-        this.reqFee = BigInt(reqFee);
+        this.nonce = nonce ? BigInt(nonce) : BigInt(0);
+        this.reqFee = reqFee ? BigInt(reqFee) : BigInt(0);
 
         // userAddress 和 providerAddress 为 u160 以 hexstring 形式输入
-        this.userAddress = BigInt(userAddress);
-        this.providerAddress = BigInt(providerAddress);
+        this.userAddress = userAddress ? BigInt(userAddress) : BigInt(0);
+        this.providerAddress = providerAddress ? BigInt(providerAddress) : BigInt(0);
 
-        this.requestHash = requestHash;
-        this.resFee = BigInt(resFee);
+        this.requestHash = requestHash || new Uint8Array(HASH_LENGTH).fill(0);
+        this.resFee = resFee ? BigInt(resFee) : BigInt(0);
     }
 
     serializeRequest() {

@@ -110,18 +110,17 @@ async function signRequestHelper(trace, privkey) {
     return sigs;
 }
 
-async function signRequests(requests, reqPrivKey, resPrivKey) {
+async function signRequests(requests, privKey, signResponse) {
     await eddsa.init();
 
-    const reqTrace = requests.map((request) => request.serializeRequest());
-    const resTrace = requests.map((request) => request.serializeResponse());
+    var trace;
+    if (signResponse) {
+        trace = requests.map((request) => request.serializeResponse());
+    } else {
+        trace = requests.map((request) => request.serializeRequest());
+    }
 
-    console.log('reqTrace:', reqTrace);
-    console.log('resTrace:', resTrace);
-
-    const reqSigs = await signRequestHelper(reqTrace, reqPrivKey);
-    const resSigs = await signRequestHelper(resTrace, resPrivKey);
-    return { reqSigs, resSigs };
+    return await signRequestHelper(trace, privKey);
 }
 
 async function verifySigHelper(trace, sigs, pubkey) {
@@ -138,15 +137,17 @@ async function verifySigHelper(trace, sigs, pubkey) {
     return isValid;
 }
 
-async function verifySig(requests, reqSig, reqPubkey, resSig, resPubkey) {
+async function verifySig(requests, sig, pubKey, signResponse) {
     await eddsa.init();
 
-    const reqTrace = requests.map((request) => request.serializeRequest());
-    const resTrace = requests.map((request) => request.serializeResponse());
+    var trace;
+    if (signResponse) {
+        trace = requests.map((request) => request.serializeResponse());
+    } else {
+        trace = requests.map((request) => request.serializeRequest());
+    }
 
-    const reqIsValid = await verifySigHelper(reqTrace, reqSig, reqPubkey);
-    const resIsValid = await verifySigHelper(resTrace, resSig, resPubkey);
-    return { reqIsValid, resIsValid };
+    return await verifySigHelper(trace, sig, pubKey);
 }
 
 // 辅助函数：填充签名

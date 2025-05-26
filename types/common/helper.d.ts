@@ -13,12 +13,6 @@ export function signAndVerifyRequests(requests: any, babyJubJubPrivateKey: any, 
     r8: any[];
     s: any[];
 }>;
-export function signRequests(requests: any, reqPrivKey: any, resPrivKey: any): Promise<{
-    reqSigs: any[];
-    resSigs: any[];
-}>;
-export function verifySig(requests: any, reqSig: any, reqPubkey: any, resSig: any, resPubkey: any): Promise<{
-    reqIsValid: any[];
-    resIsValid: any[];
-}>;
+export function signRequests(requests: any, privKey: any, signResponse: any): Promise<any[]>;
+export function verifySig(requests: any, sig: any, pubKey: any, signResponse: any): Promise<any[]>;
 export function genPubkey(privkey: any): Promise<any>;

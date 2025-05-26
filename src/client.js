@@ -25,15 +25,14 @@ async function genCombinedKey(privkey0, privkey1) {
     return combinedKey;
 }
 
-async function signData(data, reqPrivkey, resPrivkey) {
-    const reqKey = await genCombinedKey(reqPrivkey[0], reqPrivkey[1]);
-    const resKey = await genCombinedKey(resPrivkey[0], resPrivkey[1]);
+async function signData(data, privKey, signResponse) {
+    const combinedKey = await genCombinedKey(privKey[0], privKey[1]);
 
-    return await helper.signRequests(data, reqKey, resKey);
+    return await helper.signRequests(data, combinedKey, signResponse);
 }
 
-async function verifySignature(data, reqSig, reqPubkey, resSig, resPubkey) {
-    return await helper.verifySig(data, reqSig, reqPubkey, resSig, resPubkey);
+async function verifySignature(data, sig, pubKey, signResponse) {
+    return await helper.verifySig(data, sig, pubKey, signResponse);
 }
 
 module.exports = {

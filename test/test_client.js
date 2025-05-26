@@ -46,25 +46,39 @@ describe('client API test', function () {
         ];
         console.log('requests:', requests);
 
-        const signatures = await client.signData(
+        const reqSigs = await client.signData(
             requests,
             [keys1.packPrivkey0, keys1.packPrivkey1],
-            [keys2.packPrivkey0, keys2.packPrivkey1]
+            false
         );
-        console.log('signatures:', signatures);
+        console.log('signatures:', reqSigs);
 
-        const isValid = await client.verifySignature(
+        const resSigs = await client.signData(
             requests,
-            signatures.reqSigs,
+            [keys2.packPrivkey0, keys2.packPrivkey1],
+            true
+        );
+        console.log('signatures:', resSigs);
+
+        let isValid = await client.verifySignature(
+            requests,
+            reqSigs,
             [keys1.packedPubkey0, keys1.packedPubkey1],
-            signatures.resSigs,
-            [keys2.packedPubkey0, keys2.packedPubkey1]
+            false
         );
         console.log('isValid:', isValid);
-        isValid.reqIsValid.forEach((element) => {
+        isValid.forEach((element) => {
             assert.ok(element);
         });
-        isValid.resIsValid.forEach((element) => {
+
+        isValid = await client.verifySignature(
+            requests,
+            resSigs,
+            [keys2.packedPubkey0, keys2.packedPubkey1],
+            true
+        );
+        console.log('isValid:', isValid);
+        isValid.forEach((element) => {
             assert.ok(element);
         });
     });

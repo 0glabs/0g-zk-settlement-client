@@ -4,11 +4,5 @@ export function genKeyPair(): Promise<{
     packedPubkey0: bigint;
     packedPubkey1: bigint;
 }>;
-export function signData(data: any, reqPrivkey: any, resPrivkey: any): Promise<{
-    reqSigs: any[];
-    resSigs: any[];
-}>;
-export function verifySignature(data: any, reqSig: any, reqPubkey: any, resSig: any, resPubkey: any): Promise<{
-    reqIsValid: any[];
-    resIsValid: any[];
-}>;
+export function signData(data: any, privKey: any, signResponse: any): Promise<any[]>;
+export function verifySignature(data: any, sig: any, pubKey: any, signResponse: any): Promise<any[]>;
