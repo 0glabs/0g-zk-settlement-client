@@ -6,7 +6,9 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "gen": "tsc -p tsconfig.json",
+    "format": "prettier --write \"{src,test}/**/*.{js,ts}\""
   },
   "dependencies": {
     "express": "^4.17.1",
@@ -31,5 +33,6 @@
     "src",
     "types"
   ],
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

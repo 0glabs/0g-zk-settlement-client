@@ -2,19 +2,23 @@ const utils = require('./utils');
 
 const ADDR_LENGTH = 20;
 const NONCE_LENGTH = 8;
-const FEE_LENGTH = 16;  // u128 的长度为 16 字节
+const FEE_LENGTH = 16; // u128 的长度为 16 字节
+const HASH_LENGTH = 32; // u256 的长度为 32 字节
 
 class Request {
-    constructor(nonce, fee, userAddress, providerAddress) {
-        this.nonce = BigInt(nonce);
-        this.fee = BigInt(fee);
+    constructor(nonce, reqFee, userAddress, providerAddress, requestHash, resFee) {
+        this.nonce = nonce ? BigInt(nonce) : BigInt(0);
+        this.reqFee = reqFee ? BigInt(reqFee) : BigInt(0);
 
         // userAddress 和 providerAddress 为 u160 以 hexstring 形式输入
-        this.userAddress = BigInt(userAddress);
-        this.providerAddress = BigInt(providerAddress);
+        this.userAddress = userAddress ? BigInt(userAddress) : BigInt(0);
+        this.providerAddress = providerAddress ? BigInt(providerAddress) : BigInt(0);
+
+        this.requestHash = requestHash || new Uint8Array(HASH_LENGTH).fill(0);
+        this.resFee = resFee ? BigInt(resFee) : BigInt(0);
     }
 
-    serialize() {
+    serializeRequest() {
         const buffer = new ArrayBuffer(NONCE_LENGTH + ADDR_LENGTH * 2 + FEE_LENGTH);
         let offset = 0;
 
@@ -25,7 +29,7 @@ class Request {
         offset += NONCE_LENGTH;
 
         // 写入 fee (u128)
-        const feeBytes = utils.bigintToBytes(this.fee, FEE_LENGTH);
+        const feeBytes = utils.bigintToBytes(this.reqFee, FEE_LENGTH);
         new Uint8Array(buffer, offset, FEE_LENGTH).set(feeBytes);
         offset += FEE_LENGTH;
 
@@ -37,44 +41,92 @@ class Request {
         // 写入 providerAddress (u160)
         const providerAddressBytes = utils.bigintToBytes(this.providerAddress, ADDR_LENGTH);
         new Uint8Array(buffer, offset, ADDR_LENGTH).set(providerAddressBytes);
-        offset += ADDR_LENGTH;
 
         return new Uint8Array(buffer);
     }
 
+    serializeResponse() {
+        const buffer = new ArrayBuffer(HASH_LENGTH + FEE_LENGTH);
+        let offset = 0;
+
+        // 写入 requestHash (u256)
+        new Uint8Array(buffer, offset, HASH_LENGTH).set(this.requestHash);
+        offset += HASH_LENGTH;
+
+        // 写入 resFee (u128)
+        const resFeeBytes = utils.bigintToBytes(this.resFee, FEE_LENGTH);
+        new Uint8Array(buffer, offset, FEE_LENGTH).set(resFeeBytes);
+
+        return new Uint8Array(buffer);
+    }
+
+    serialize() {
+        const requestBytes = this.serializeRequest();
+        const responseBytes = this.serializeResponse();
+
+        // 合并请求和响应的字节数组
+        const combinedBytes = new Uint8Array(requestBytes.length + responseBytes.length);
+        combinedBytes.set(requestBytes, 0);
+        combinedBytes.set(responseBytes, requestBytes.length);
+
+        return combinedBytes;
+    }
+
     static deserialize(byteArray) {
-        const expectedLength = NONCE_LENGTH + ADDR_LENGTH * 2 + FEE_LENGTH;
+        const expectedLength =
+            NONCE_LENGTH + ADDR_LENGTH * 2 + FEE_LENGTH + HASH_LENGTH + FEE_LENGTH;
 
         if (byteArray.length !== expectedLength) {
-            throw new Error(`Invalid byte array length for deserialization. Expected: ${expectedLength}, but got: ${byteArray.length}`);
+            throw new Error(
+                `Invalid byte array length for deserialization. Expected: ${expectedLength}, but got: ${byteArray.length}`
+            );
         }
 
         const view = new DataView(byteArray.buffer);
         let offset = 0;
 
         // 读取 nonce (u64)
-        const nonce = utils.bytesToBigint(new Uint8Array(byteArray.slice(offset, offset + NONCE_LENGTH)));
+        const nonce = utils.bytesToBigint(
+            new Uint8Array(byteArray.slice(offset, offset + NONCE_LENGTH))
+        );
         offset += NONCE_LENGTH;
 
         // 读取 fee (u128)
-        const fee = utils.bytesToBigint(new Uint8Array(byteArray.slice(offset, offset + FEE_LENGTH)));
+        const fee = utils.bytesToBigint(
+            new Uint8Array(byteArray.slice(offset, offset + FEE_LENGTH))
+        );
         offset += FEE_LENGTH;
 
         // 读取 userAddress (u160)
-        const userAddress = utils.bytesToBigint(new Uint8Array(byteArray.slice(offset, offset + ADDR_LENGTH)));
+        const userAddress = utils.bytesToBigint(
+            new Uint8Array(byteArray.slice(offset, offset + ADDR_LENGTH))
+        );
         offset += ADDR_LENGTH;
 
         // 读取 providerAddress (u160)
-        const providerAddress = utils.bytesToBigint(new Uint8Array(byteArray.slice(offset, offset + ADDR_LENGTH)));
+        const providerAddress = utils.bytesToBigint(
+            new Uint8Array(byteArray.slice(offset, offset + ADDR_LENGTH))
+        );
         offset += ADDR_LENGTH;
-        
+
+        // 读取 requestHash (u256)
+        const requestHash = new Uint8Array(byteArray.slice(offset, offset + HASH_LENGTH));
+        offset += HASH_LENGTH;
+
+        // 读取 resFee (u128)
+        const resFee = utils.bytesToBigint(
+            new Uint8Array(byteArray.slice(offset, offset + FEE_LENGTH))
+        );
+
         return new Request(
             nonce.toString(),
             fee.toString(),
             '0x' + userAddress.toString(16),
-            '0x' + providerAddress.toString(16)
+            '0x' + providerAddress.toString(16),
+            requestHash,
+            '0x' + resFee.toString()
         );
     }
 }
 
-module.exports = { Request };
+module.exports = { Request, NONCE_LENGTH, ADDR_LENGTH, FEE_LENGTH, HASH_LENGTH };
