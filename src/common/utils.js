@@ -1,3 +1,5 @@
+const LEAF_SIZE = 20;
+
 function bigintToBytes(bigint, length) {
     const bytes = new Uint8Array(length);
     for (let i = 0; i < length; i++) {
@@ -54,4 +56,5 @@ module.exports = {
     convertToBiguint64,
     formatArray,
     jsonifyData,
+    LEAF_SIZE,
 };
