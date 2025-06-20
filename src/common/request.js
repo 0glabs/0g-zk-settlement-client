@@ -24,7 +24,6 @@ class Request {
 
         // 写入 nonce (u64)
         const nonceBytes = utils.bigintToBytes(this.nonce, NONCE_LENGTH);
-        console.log('nonceBytes:', nonceBytes, 'nonce:', this.nonce);
         new Uint8Array(buffer, offset, NONCE_LENGTH).set(nonceBytes);
         offset += NONCE_LENGTH;
 
